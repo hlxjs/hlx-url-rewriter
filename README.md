@@ -8,7 +8,7 @@
 A transform stream to modify URLs contained in HLS playlists
 
 ## Features
-* Being used with other [`hls-streams`](https://github.com/hls-streams) objects, it provides a functionality to filter every playlists and rewrite the urls in them based on the `rules`.
+* Being used with other [`hlx`](https://github.com/hlxjs) objects, it provides a functionality to filter every playlists and rewrite the urls in them based on the `rules`.
 
 ## Install
 [![NPM](https://nodei.co/npm/hlx-url-rewriter.png?mini=true)](https://nodei.co/npm/hlx-url-rewriter/)
