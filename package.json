@@ -35,6 +35,7 @@
     "space": true,
     "rules": {
       "capitalized-comments": 0,
+      "camelcase": 0,
       "dot-notation": 0,
       "indent": 0,
       "new-cap": 0,

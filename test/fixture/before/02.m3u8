@@ -4,7 +4,7 @@
 #EXTINF:9.009,
 first.ts
 #EXTINF:9.009,
-/second.ts
+second.ts
 #EXTINF:3.003,
 ./third.ts
 #EXT-X-ENDLIST

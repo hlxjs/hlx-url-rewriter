@@ -4,7 +4,7 @@
 #EXTINF:9.009,
 first.ts
 #EXTINF:9.009,
-second.ts
+/media.example.com/second.ts
 #EXTINF:3.003,
 /media.example.com/low/third.ts
 #EXT-X-ENDLIST
