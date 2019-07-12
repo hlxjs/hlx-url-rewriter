@@ -14,7 +14,11 @@ class DummyReadable extends Readable {
 
   _read() {
     fixtures.forEach(({before, after}) => {
-      this.push(HLS.parse(before));
+      const data = HLS.parse(before);
+      if (data && data.type === 'playlist' && !data.uri) {
+        data.uri = 'http://media.example.com';
+      }
+      this.push(data);
       results.push(after.trim());
     });
     this.push(null);

@@ -17,10 +17,11 @@ class TransformStream extends stream.Transform {
 }
 
 function rewrite(playlist, rewriteFunc) {
-  function rewriteUrl(item = {}) {
-    const {uri} = item;
-    if (uri) {
-      item.uri = rewriteFunc(uri);
+  function rewriteUrl(item = {}, isBase) {
+    const {uri, __hlx_url_rewriter_visited__: visited} = item;
+    if (uri && !visited) {
+      item.uri = rewriteFunc(uri, isBase);
+      item.__hlx_url_rewriter_visited__ = true;
     }
   }
   function rewriteUrls(list) {
@@ -30,7 +31,7 @@ function rewrite(playlist, rewriteFunc) {
       rewriteUrl(item.map);
     }
   }
-  rewriteUrl(playlist);
+  rewriteUrl(playlist, true);
   if (playlist.isMasterPlaylist) {
     const {variants, sessionDataList, sessionKeyList} = playlist;
     [variants, sessionDataList, sessionKeyList].forEach(rewriteUrls);
