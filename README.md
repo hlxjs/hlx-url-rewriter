@@ -21,10 +21,12 @@ const {createUrlRewriter} = require('hlx-url-rewriter'); // url-rewriter
 const {createTerminator} = require('hlx-terminator')
 
 const src = createReadStream('https://foo.bar/sample.m3u8');
-const rewrite = createUrlRewriter(urlStr => {
-  // Convert an absolute url into a relative one
-  const url = new URL(urlStr);
-  return url.pathname;
+const rewrite = createUrlRewriter(data => {
+  // Convert playlist's urls from absolute to relative
+  if (data.type === 'playlist') {
+    const url = new URL(data.uri);
+    data.uri = url.pathname;
+  }
 });
 const dest = createTerminator();
 
@@ -43,18 +45,19 @@ Creates a new `TransformStream` object.
 #### params
 | Name    | Type   | Required | Default | Description   |
 | ------- | ------ | -------- | ------- | ------------- |
-| rules | function | No       | internally defined default function (see below) | A function that takes an original url string and returns a modified url string. The function is called asynchronously each time the stream encountered a url line or url attribute in playlists. |
+| rules | function | No       | internally defined default function (see below) | A function that takes an hls-parser object and modifies its url string. |
 
 #### default function
-Default behavior is something like below (pseudo code):
+The default behavior is something like this:
 ```js
-function defaultFunc(url) {
-  // Convert absolute urls into relative paths
-  if (url is relative) {
-    return url;
+// pseudo code
+function defaultFunc(data) {
+  if (data.uri is relative) {
+    // Do nothing
   } else {
-    // Make a root directory with the hostname
-    return `/${url.hostname}/${url.pathname}`;
+    // Put in a root directory
+    const url = new URL(data.uri);
+    data.uri = `/${url.hostname}/${url.pathname}`;
   }
 }
 ```

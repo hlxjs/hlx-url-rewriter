@@ -9,7 +9,8 @@
   "scripts": {
     "lint": "xo",
     "coverage": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
-    "test": "npm run lint && npm audit --audit-level high && ava --verbose"
+    "audit": "npm audit --audit-level high",
+    "test": "npm run lint && npm run audit && ava --verbose"
   },
   "repository": {
     "type": "git",

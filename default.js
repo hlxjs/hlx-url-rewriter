@@ -49,32 +49,62 @@ function getUrlType(url) {
 
 let baseHostName = '';
 
-function defaultFunc(url, saveAsBaseUrl) {
+function defaultFunc(data) {
+  if (data.type === 'playlist') {
+    if (data.isMasterPlaylist) {
+      rewrite(data, true);
+      const {variants, sessionDataList, sessionKeyList} = data;
+      for (const variant of variants) {
+        rewrite(variant);
+        const {audio, video, subtitles, closedCaptions} = variant;
+        [audio, video, subtitles, closedCaptions].forEach(rewriteUrls);
+      }
+      [sessionDataList, sessionKeyList].forEach(rewriteUrls);
+    } else {
+      rewrite(data, true);
+      rewriteUrls(data.segments);
+    }
+  }
+}
+
+function rewriteUrls(list) {
+  for (const item of list) {
+    rewrite(item);
+    if (item.type === 'segment') {
+      rewrite(item.key);
+      rewrite(item.map);
+    }
+  }
+}
+
+function rewrite(data, saveAsBaseUrl) {
+  if (!data || data.__hlx_url_rewriter_visited__) {
+    return;
+  }
+
+  let {uri} = data;
+
   if (saveAsBaseUrl) {
     baseHostName = '';
   }
 
-  // Convert absolute urls into relative paths
-  let type = getUrlType(url);
+  let type = getUrlType(uri);
 
   if (type === 'scheme-relative') {
-    url = `http:${url}`;
+    uri = `http:${uri}`;
     type = 'absolute';
   }
 
   if (type === 'absolute') {
-    const obj = getUrlObj(url);
+    const obj = getUrlObj(uri);
     if (saveAsBaseUrl) {
       baseHostName = obj.hostname;
     }
-    return `/${obj.hostname}${obj.pathname}${obj.search}${obj.hash}`;
+    data.uri = `/${obj.hostname}${obj.pathname}${obj.search}${obj.hash}`;
+  } else if (type === 'path-absolute' && baseHostName) {
+    data.uri = `/${baseHostName}${uri}`;
   }
-
-  if (type === 'path-absolute' && baseHostName) {
-    return `/${baseHostName}${url}`;
-  }
-
-  return url;
+  data.__hlx_url_rewriter_visited__ = true;
 }
 
 module.exports = defaultFunc;
