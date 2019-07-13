@@ -1,3 +1,4 @@
+const path = require('path');
 const {URL} = require('url');
 
 function tryCatch(...params) {
@@ -103,6 +104,8 @@ function rewrite(data, saveAsBaseUrl) {
     data.uri = `/${obj.hostname}${obj.pathname}${obj.search}${obj.hash}`;
   } else if (type === 'path-absolute' && baseHostName) {
     data.uri = `/${baseHostName}${uri}`;
+  } else if (type === 'path-relative' && baseHostName) {
+    data.uri = path.resolve(`/${baseHostName}`, uri);
   }
   data.__hlx_url_rewriter_visited__ = true;
 }
