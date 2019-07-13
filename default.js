@@ -53,28 +53,34 @@ let baseHostName = '';
 function defaultFunc(data) {
   if (data.type === 'playlist') {
     if (data.isMasterPlaylist) {
-      rewrite(data, true);
+      rewriteUrl(data, true);
       const {variants, sessionDataList, sessionKeyList} = data;
       for (const variant of variants) {
-        rewrite(variant);
+        rewriteUrl(variant);
         const {audio, video, subtitles, closedCaptions} = variant;
         [audio, video, subtitles, closedCaptions].forEach(rewriteUrls);
       }
       [sessionDataList, sessionKeyList].forEach(rewriteUrls);
     } else {
-      rewrite(data, true);
+      rewriteUrl(data, true);
       rewriteUrls(data.segments);
     }
+  } else if (data.type === 'segment') {
+    rewriteUrl(data);
   }
 }
 
 function rewriteUrls(list) {
   for (const item of list) {
-    rewrite(item);
-    if (item.type === 'segment') {
-      rewrite(item.key);
-      rewrite(item.map);
-    }
+    rewriteUrl(item);
+  }
+}
+
+function rewriteUrl(data, saveAsBaseUrl) {
+  rewrite(data, saveAsBaseUrl);
+  if (data.type === 'segment') {
+    rewrite(data.key);
+    rewrite(data.map);
   }
 }
 
