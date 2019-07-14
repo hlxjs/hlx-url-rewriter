@@ -2,7 +2,7 @@
 #EXT-X-VERSION:3
 #EXT-X-TARGETDURATION:10
 #EXTINF:9.009,
-/media.example.com/first.ts
+/media.example.com/playlist/first.ts
 #EXTINF:9.009,
 /media.example.com/second.ts
 #EXTINF:3.003,

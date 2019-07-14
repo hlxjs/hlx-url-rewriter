@@ -51,7 +51,7 @@ function getUrlType(url) {
   return 'path-relative';
 }
 
-let baseHostName = '';
+let baseUrl = null;
 
 function defaultFunc(data) {
   if (data.type === 'playlist') {
@@ -97,7 +97,7 @@ function rewrite(data, saveAsBaseUrl) {
   print(`\t<<< "${uri}"`);
 
   if (saveAsBaseUrl) {
-    baseHostName = '';
+    baseUrl = null;
   }
 
   let type = getUrlType(uri);
@@ -110,13 +110,13 @@ function rewrite(data, saveAsBaseUrl) {
   if (type === 'absolute') {
     const obj = getUrlObj(uri);
     if (saveAsBaseUrl) {
-      baseHostName = obj.hostname;
+      baseUrl = obj;
     }
     data.uri = `/${obj.hostname}${obj.pathname}${obj.search}${obj.hash}`;
-  } else if (type === 'path-absolute' && baseHostName) {
-    data.uri = `/${baseHostName}${uri}`;
-  } else if (type === 'path-relative' && baseHostName) {
-    data.uri = path.resolve(`/${baseHostName}`, uri);
+  } else if (type === 'path-absolute' && baseUrl) {
+    data.uri = `/${baseUrl.hostname}${uri}`;
+  } else if (type === 'path-relative' && baseUrl) {
+    data.uri = path.resolve(`/${baseUrl.hostname}/${path.dirname(baseUrl.pathname)}/`, uri);
   }
   print(`\t>>> "${data.uri}"`);
   data.__hlx_url_rewriter_visited__ = true;
