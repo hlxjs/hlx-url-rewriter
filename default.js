@@ -1,5 +1,8 @@
 const path = require('path');
 const {URL} = require('url');
+const debug = require('debug');
+
+const print = debug('hlx-url-rewriter');
 
 function tryCatch(...params) {
   const func = params.shift();
@@ -91,6 +94,8 @@ function rewrite(data, saveAsBaseUrl) {
 
   let {uri} = data;
 
+  print(`\t<<< "${uri}"`);
+
   if (saveAsBaseUrl) {
     baseHostName = '';
   }
@@ -113,6 +118,7 @@ function rewrite(data, saveAsBaseUrl) {
   } else if (type === 'path-relative' && baseHostName) {
     data.uri = path.resolve(`/${baseHostName}`, uri);
   }
+  print(`\t>>> "${data.uri}"`);
   data.__hlx_url_rewriter_visited__ = true;
 }
 

@@ -55,7 +55,9 @@
       "test/fixture/**/*"
     ]
   },
-  "dependencies": {},
+  "dependencies": {
+    "debug": "^4.1.1"
+  },
   "devDependencies": {
     "ava": "^2.1.0",
     "coveralls": "^3.0.4",
