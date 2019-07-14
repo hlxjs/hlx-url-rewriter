@@ -112,11 +112,11 @@ function rewrite(data, saveAsBaseUrl) {
     if (saveAsBaseUrl) {
       baseUrl = obj;
     }
-    data.uri = `/${obj.hostname}${obj.pathname}${obj.search}${obj.hash}`;
+    data.uri = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
   } else if (type === 'path-absolute' && baseUrl) {
-    data.uri = `/${baseUrl.hostname}${uri}`;
+    data.uri = path.join(`/${baseUrl.hostname}`, uri);
   } else if (type === 'path-relative' && baseUrl) {
-    data.uri = path.resolve(`/${baseUrl.hostname}/${path.dirname(baseUrl.pathname)}/`, uri);
+    data.uri = path.join(`/${baseUrl.hostname}`, path.dirname(baseUrl.pathname), uri);
   }
   print(`\t>>> "${data.uri}"`);
   data.__hlx_url_rewriter_visited__ = true;
