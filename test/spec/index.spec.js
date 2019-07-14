@@ -25,7 +25,7 @@ const objects = [
   }
 ];
 const urlsExpected = [
-  '/media.example.com/abc.ts',
+  '/media.example.com/playlist/abc.ts',
   '/media.example.com/def.ts',
   '/media.example.com/ghi.ts'
 ];
@@ -40,7 +40,7 @@ class DummyReadable extends Readable {
     fixtures.forEach(({before, after}) => {
       const data = HLS.parse(before);
       if (data && data.type === 'playlist' && !data.uri) {
-        data.uri = 'http://media.example.com';
+        data.uri = 'http://media.example.com/playlist/media.m3u8';
       }
       this.push(data);
       results.push(after.trim());
