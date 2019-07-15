@@ -2,6 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/hlxjs/hlx-url-rewriter/badge.svg?branch=master)](https://coveralls.io/github/hlxjs/hlx-url-rewriter?branch=master)
 [![Dependency Status](https://david-dm.org/hlxjs/hlx-url-rewriter.svg)](https://david-dm.org/hlxjs/hlx-url-rewriter)
 [![Development Dependency Status](https://david-dm.org/hlxjs/hlx-url-rewriter/dev-status.svg)](https://david-dm.org/hlxjs/hlx-url-rewriter#info=devDependencies)
+[![Known Vulnerabilities](https://snyk.io/test/github/hlxjs/hlx-url-rewriter/badge.svg)](https://snyk.io/test/github/hlxjs/hlx-url-rewriter)
 [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
 
 # hlx-url-rewriter
