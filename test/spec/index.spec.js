@@ -10,16 +10,19 @@ const actuals = [];
 const objects = [
   {
     uri: 'abc.ts',
+    parentUri: 'http://media.example.com/playlist/media.m3u8',
     mediaSequenceNumber: 0,
     discontinuitySequence: 0
   },
   {
     uri: '/def.ts',
+    parentUri: 'http://media.example.com/playlist/media.m3u8',
     mediaSequenceNumber: 1,
     discontinuitySequence: 0
   },
   {
     uri: 'http://media.example.com/ghi.ts',
+    parentUri: 'http://media.example.com/playlist/media.m3u8',
     mediaSequenceNumber: 2,
     discontinuitySequence: 0
   }
@@ -39,14 +42,23 @@ class DummyReadable extends Readable {
   _read() {
     fixtures.forEach(({before, after}) => {
       const data = HLS.parse(before);
-      if (data && data.type === 'playlist' && !data.uri) {
+      if (data.isMasterPlaylist) {
+        data.uri = 'http://media.example.com/playlist/master.m3u8';
+        data.parentUri = '';
+      } else {
         data.uri = 'http://media.example.com/playlist/media.m3u8';
+        data.parentUri = 'http://media.example.com/playlist/master.m3u8';
+        for (const segment of data.segments) {
+          segment.parentUri = data.uri;
+        }
       }
       this.push(data);
       results.push(after.trim());
     });
     objects.forEach(object => {
-      this.push(new Segment(object));
+      const segment = new Segment(object);
+      segment.parentUri = 'http://media.example.com/playlist/media.m3u8';
+      this.push(segment);
     });
     this.push(null);
   }
@@ -59,7 +71,9 @@ class DummyWritable extends Writable {
 
   _write(data, _, cb) {
     if (data.type === 'playlist') {
-      actuals.push(HLS.stringify(data).trim());
+      const result = HLS.stringify(data).trim();
+      // console.log(result);
+      actuals.push(result);
     } else if (data.type === 'segment') {
       urlsActual.push(data.uri);
     }

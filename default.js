@@ -1,125 +1,63 @@
 const path = require('path');
-const {URL} = require('url');
 const debug = require('debug');
+const {createUrl} = require('hlx-util');
 
 const print = debug('hlx-url-rewriter');
-
-function tryCatch(...params) {
-  const func = params.shift();
-  try {
-    return func();
-  } catch (err) {
-    if (params.length > 0) {
-      return tryCatch(...params);
-    }
-    throw err;
-  }
-}
-
-function getUrlObj(url) {
-  return tryCatch(
-    () => {
-      return new URL(url);
-    },
-    () => {
-      return null;
-    }
-  );
-}
-
-function getUrlType(url) {
-  if (tryCatch(
-      () => {
-        url = new URL(url);
-        return true;
-      },
-      () => {
-        return false;
-      }
-    )) {
-    return 'absolute';
-  }
-
-  if (url.startsWith('//')) {
-    return 'scheme-relative';
-  }
-
-  if (url.startsWith('/')) {
-    return 'path-absolute';
-  }
-
-  return 'path-relative';
-}
-
-let baseUrl = null;
 
 function defaultFunc(data) {
   if (data.type === 'playlist') {
     if (data.isMasterPlaylist) {
-      rewriteUrl(data, true);
+      rewriteUrl(data);
       const {variants, sessionDataList, sessionKeyList} = data;
       for (const variant of variants) {
-        rewriteUrl(variant);
+        rewriteUrl(variant, data);
         const {audio, video, subtitles, closedCaptions} = variant;
-        [audio, video, subtitles, closedCaptions].forEach(rewriteUrls);
+        [audio, video, subtitles, closedCaptions].forEach(list => {
+          rewriteUrls(list, data);
+        });
       }
-      [sessionDataList, sessionKeyList].forEach(rewriteUrls);
+      [sessionDataList, sessionKeyList].forEach(list => {
+        rewriteUrls(list, data);
+      });
     } else {
-      rewriteUrl(data, true);
-      rewriteUrls(data.segments);
+      rewriteUrl(data);
+      rewriteUrls(data.segments, data);
     }
   } else if (data.type === 'segment') {
     rewriteUrl(data);
   }
 }
 
-function rewriteUrls(list) {
+function rewriteUrls(list, base) {
   for (const item of list) {
-    rewriteUrl(item);
+    rewriteUrl(item, base);
   }
 }
 
-function rewriteUrl(data, saveAsBaseUrl) {
-  rewrite(data, saveAsBaseUrl);
-  if (data.type === 'segment') {
-    rewrite(data.key);
-    rewrite(data.map);
-  }
-}
-
-function rewrite(data, saveAsBaseUrl) {
+function rewriteUrl(data, base = {}) {
   if (!data || data.__hlx_url_rewriter_visited__) {
     return;
   }
-
-  let {uri} = data;
-
-  print(`\t<<< "${uri}"`);
-
-  if (saveAsBaseUrl) {
-    baseUrl = null;
+  const {uri, parentUri} = data;
+  if (parentUri) {
+    data.uri = rewrite(uri, parentUri);
+  } else {
+    data.uri = rewrite(uri, base.uri);
   }
 
-  let type = getUrlType(uri);
-
-  if (type === 'scheme-relative') {
-    uri = `http:${uri}`;
-    type = 'absolute';
+  if (data.type === 'segment') {
+    rewriteUrl(data.key, data);
+    rewriteUrl(data.map, data);
   }
-
-  if (type === 'absolute') {
-    const obj = getUrlObj(uri);
-    if (saveAsBaseUrl) {
-      baseUrl = obj;
-    }
-    data.uri = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
-  } else if (type === 'path-absolute' && baseUrl) {
-    data.uri = path.join(`/${baseUrl.hostname}`, uri);
-  } else if (type === 'path-relative' && baseUrl) {
-    data.uri = path.join(`/${baseUrl.hostname}`, path.dirname(baseUrl.pathname), uri);
-  }
-  print(`\t>>> "${data.uri}"`);
   data.__hlx_url_rewriter_visited__ = true;
+}
+
+function rewrite(uri, base) {
+  print(`\t<<< "${uri}", "${base}"`);
+  const obj = createUrl(uri, base);
+  const result = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
+  print(`\t>>> "${result}"`);
+  return result;
 }
 
 module.exports = defaultFunc;
