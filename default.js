@@ -54,8 +54,22 @@ function rewriteUrl(data, base = {}) {
 
 function rewrite(uri, base) {
   print(`\t<<< "${uri}", "${base}"`);
+  let result;
   const obj = createUrl(uri, base);
-  const result = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
+  const scheme = 'file:';
+  if (obj.protocol === scheme) {
+    const filePath = obj.pathname;
+    if (base && uri.startsWith(scheme)) {
+      const obj = createUrl(base);
+      base = obj.pathname;
+      console.log(`###path.relative(path.dirname(${base}), ${filePath})`);
+      result = `/${path.relative(path.dirname(base), filePath)}`;
+    } else {
+      result = filePath;
+    }
+  } else {
+    result = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
+  }
   print(`\t>>> "${result}"`);
   return result;
 }
