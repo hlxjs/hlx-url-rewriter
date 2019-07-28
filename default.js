@@ -7,7 +7,6 @@ const print = debug('hlx-url-rewriter');
 function defaultFunc(data) {
   if (data.type === 'playlist') {
     if (data.isMasterPlaylist) {
-      rewriteUrl(data);
       const {variants, sessionDataList, sessionKeyList} = data;
       for (const variant of variants) {
         rewriteUrl(variant, data);
@@ -19,9 +18,10 @@ function defaultFunc(data) {
       [sessionDataList, sessionKeyList].forEach(list => {
         rewriteUrls(list, data);
       });
-    } else {
       rewriteUrl(data);
+    } else {
       rewriteUrls(data.segments, data);
+      rewriteUrl(data);
     }
   } else if (data.type === 'segment') {
     rewriteUrl(data);
@@ -56,17 +56,8 @@ function rewrite(uri, base) {
   print(`\t<<< "${uri}", "${base}"`);
   let result;
   const obj = createUrl(uri, base);
-  const scheme = 'file:';
-  if (obj.protocol === scheme) {
-    const filePath = obj.pathname;
-    if (base && uri.startsWith(scheme)) {
-      const obj = createUrl(base);
-      base = obj.pathname;
-      console.log(`###path.relative(path.dirname(${base}), ${filePath})`);
-      result = `/${path.relative(path.dirname(base), filePath)}`;
-    } else {
-      result = filePath;
-    }
+  if (obj.protocol === 'file:') {
+    result = uri;
   } else {
     result = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
   }
