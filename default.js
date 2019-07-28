@@ -57,7 +57,12 @@ function rewrite(uri, base) {
   let result;
   const obj = createUrl(uri, base);
   if (obj.protocol === 'file:') {
-    result = uri;
+    if (uri.startsWith('file:')) {
+      const {rootPath = '/'} = defaultFunc.options;
+      result = `/${path.relative(rootPath, obj.pathname)}`;
+    } else {
+      result = uri;
+    }
   } else {
     result = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
   }

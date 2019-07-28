@@ -40,13 +40,14 @@ src.pipe(rewrite).pipe(dest)
 ## API
 The features are built on top of the Node's [transform streams](https://nodejs.org/api/stream.html#stream_class_stream_transform).
 
-### `createUrlRewriter(rules)`
+### `createUrlRewriter([rules, options])`
 Creates a new `TransformStream` object.
 
 #### params
 | Name    | Type   | Required | Default | Description   |
 | ------- | ------ | -------- | ------- | ------------- |
 | rules | function | No       | internally defined default function (see below) | A function that takes an hls-parser object and modifies its url string. |
+| options | function | No       | see below | An object preserving options |
 
 #### default function
 The default behavior is something like this:
@@ -62,6 +63,11 @@ function defaultFunc(data) {
   }
 }
 ```
+
+#### options
+| Name        | Type   | Default | Description                       |
+| ----------- | ------ | ------- | --------------------------------- |
+| rootPath | string | "/" | Required if file urls are included in playlists. A file url will be converted to an absolute path assuming the `rootPath` is the root. |
 
 #### return value
 An instance of `TransformStream`.
