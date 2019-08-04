@@ -6,5 +6,5 @@ first.ts
 #EXTINF:9.009,
 second.ts
 #EXTINF:3.003,
-./third.ts
+third.ts
 #EXT-X-ENDLIST

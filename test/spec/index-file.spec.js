@@ -1,7 +1,7 @@
 const {Readable, Writable} = require('stream');
 const test = require('ava');
 const HLS = require('hls-parser');
-const fixtures = require('../helper/fixtures-file');
+const getFixtures = require('../helper/fixtures');
 const {createUrlRewriter} = require('../..');
 
 const {Segment} = HLS.types;
@@ -29,8 +29,8 @@ const objects = [
 ];
 const urlsExpected = [
   'abc.ts',
-  '/def.ts',
-  '/media.example.com/ghi.ts'
+  '../def.ts',
+  '../media.example.com/ghi.ts'
 ];
 const urlsActual = [];
 
@@ -42,16 +42,17 @@ class DummyReadable extends Readable {
   }
 
   _read() {
+    const fixtures = getFixtures('file');
     fixtures.forEach(({before, after}) => {
       const data = HLS.parse(before);
       if (data.isMasterPlaylist) {
-        data.uri = 'file:///path/to/playlist/master.m3u8';
+        data.uri = 'file:///path/to/master.m3u8';
         data.parentUri = '';
       } else {
-        data.uri = '/playlist/media.m3u8';
-        data.parentUri = 'file:///path/to/playlist/master.m3u8';
+        data.uri = 'playlist/media.m3u8';
+        data.parentUri = 'file:///path/to/master.m3u8';
         for (const segment of data.segments) {
-          segment.parentUri = data.uri;
+          segment.parentUri = 'file:///path/to/playlist/media.m3u8';
         }
       }
       this.push(data);
@@ -101,7 +102,7 @@ test.cb('createUrlRewriter', t => {
     for (let i = 0; i < urlsExpected.length; i++) {
       t.is(urlsExpected[i], urlsActual[i]);
     }
-    t.is(actualMasterUri, '/playlist/master.m3u8');
+    t.is(actualMasterUri, 'file:///path/to/master.m3u8');
     t.end();
   });
 });

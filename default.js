@@ -34,7 +34,7 @@ function rewriteUrls(list, base) {
   }
 }
 
-function rewriteUrl(data, base = {}) {
+function rewriteUrl(data, base) {
   if (!data || data.__hlx_url_rewriter_visited__) {
     return;
   }
@@ -42,32 +42,33 @@ function rewriteUrl(data, base = {}) {
   if (parentUri) {
     data.uri = rewrite(uri, parentUri);
   } else {
-    data.uri = rewrite(uri, base.uri);
+    data.uri = rewrite(uri, base ? createUrl(base.uri, base.parentUri).href : '');
   }
 
   if (data.type === 'segment') {
-    rewriteUrl(data.key, data);
-    rewriteUrl(data.map, data);
+    rewriteUrl(data.key, base);
+    rewriteUrl(data.map, base);
   }
   data.__hlx_url_rewriter_visited__ = true;
 }
 
+function createFullPath(obj) {
+  const {rootPath = '/'} = defaultFunc.options;
+  const pathname = obj.protocol === 'file:' ? path.relative(rootPath, obj.pathname) : obj.pathname;
+  return path.join(`/${obj.hostname}`, pathname);
+}
+
 function rewrite(uri, base) {
   print(`\t<<< "${uri}", "${base}"`);
-  let result;
   const obj = createUrl(uri, base);
-  if (obj.protocol === 'file:') {
-    if (uri.startsWith('file:')) {
-      const {rootPath = '/'} = defaultFunc.options;
-      result = `/${path.relative(rootPath, obj.pathname)}`;
-    } else {
-      result = uri;
-    }
-  } else {
-    result = `${path.join(`/${obj.hostname}`, obj.pathname)}${obj.search}${obj.hash}`;
+  if (!base) {
+    return uri;
   }
+  const pathname = createFullPath(obj);
+  const basePathname = createFullPath(createUrl(base));
+  const result = path.relative(path.dirname(basePathname), pathname);
   print(`\t>>> "${result}"`);
-  return result;
+  return `${result}${obj.search}${obj.hash}`;
 }
 
 module.exports = defaultFunc;
