@@ -1,7 +1,7 @@
 const {Readable, Writable} = require('stream');
 const test = require('ava');
 const HLS = require('hls-parser');
-const fixtures = require('../helper/fixtures');
+const getFixtures = require('../helper/fixtures');
 const {createUrlRewriter} = require('../..');
 
 const {Segment} = HLS.types;
@@ -21,16 +21,16 @@ const objects = [
     discontinuitySequence: 0
   },
   {
-    uri: 'http://media.example.com/ghi.ts',
+    uri: 'http://foo.bar/ghi.ts',
     parentUri: 'http://media.example.com/playlist/media.m3u8',
     mediaSequenceNumber: 2,
     discontinuitySequence: 0
   }
 ];
 const urlsExpected = [
-  '/media.example.com/playlist/abc.ts',
-  '/media.example.com/def.ts',
-  '/media.example.com/ghi.ts'
+  'abc.ts',
+  '../def.ts',
+  '../../foo.bar/ghi.ts'
 ];
 const urlsActual = [];
 
@@ -40,16 +40,17 @@ class DummyReadable extends Readable {
   }
 
   _read() {
+    const fixtures = getFixtures();
     fixtures.forEach(({before, after}) => {
       const data = HLS.parse(before);
       if (data.isMasterPlaylist) {
-        data.uri = 'http://media.example.com/playlist/master.m3u8';
+        data.uri = 'http://media.example.com/master.m3u8';
         data.parentUri = '';
       } else {
-        data.uri = 'http://media.example.com/playlist/media.m3u8';
-        data.parentUri = 'http://media.example.com/playlist/master.m3u8';
+        data.uri = 'playlist/media.m3u8';
+        data.parentUri = 'http://media.example.com/master.m3u8';
         for (const segment of data.segments) {
-          segment.parentUri = data.uri;
+          segment.parentUri = 'http://media.example.com/playlist/media.m3u8';
         }
       }
       this.push(data);
