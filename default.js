@@ -1,8 +1,17 @@
 const path = require('path');
+const {URL} = require('url');
 const debug = require('debug');
-const {createUrl} = require('hlx-util');
+const {tryCatch} = require('hlx-util');
 
 const print = debug('hlx-url-rewriter');
+
+function createUrl(url, base) {
+  return tryCatch(
+    () => new URL(url),
+    () => new URL(url, base),
+    () => null
+  );
+}
 
 function defaultFunc(data) {
   if (data.type === 'playlist') {
@@ -53,19 +62,39 @@ function rewriteUrl(data, base) {
 }
 
 function createFullPath(obj) {
-  const {rootPath = '/'} = defaultFunc.options;
-  const pathname = obj.protocol === 'file:' ? path.relative(rootPath, obj.pathname) : obj.pathname;
-  return path.join(`/${obj.hostname}`, pathname);
+  if (obj.protocol === 'file:') {
+    const {rootPath = '/'} = defaultFunc.options;
+    if (obj.pathname.startsWith(rootPath)) {
+      return path.join('/', path.relative(rootPath, obj.pathname));
+    }
+  }
+  return obj.pathname;
 }
 
 function rewrite(uri, base) {
   print(`\t<<< "${uri}", "${base}"`);
+
   const obj = createUrl(uri, base);
-  if (!base) {
+  const baseObj = createUrl(base);
+
+  if (!obj || !baseObj) {
+    print(`\t>>> "${uri}"`);
     return uri;
   }
+
+  if (obj.hostname && baseObj.hostname && obj.hostname !== baseObj.hostname) {
+    print(`\t>>> "${obj.href}"`);
+    return obj.href;
+  }
+
+  if (obj.protocol !== baseObj.protocol) {
+    print(`\t>>> "${obj.href}"`);
+    return obj.href;
+  }
+
   const pathname = createFullPath(obj);
-  const basePathname = createFullPath(createUrl(base));
+  const basePathname = createFullPath(baseObj);
+  print(`\tpathname=${pathname}, basePathname=${basePathname}`);
   const result = path.relative(path.dirname(basePathname), pathname);
   print(`\t>>> "${result}"`);
   return `${result}${obj.search}${obj.hash}`;
