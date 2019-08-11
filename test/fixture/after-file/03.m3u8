@@ -6,7 +6,7 @@ first.ts
 #EXTINF:9.009,
 ../second.ts
 #EXTINF:9.009,
-../media.example.com/low/third.ts
+http://media.example.com/low/third.ts
 #EXTINF:3.003,
-../media2.example.com/low/fourth.ts
+http://media2.example.com/low/fourth.ts
 #EXT-X-ENDLIST

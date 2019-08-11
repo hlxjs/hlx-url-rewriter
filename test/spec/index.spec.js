@@ -30,7 +30,7 @@ const objects = [
 const urlsExpected = [
   'abc.ts',
   '../def.ts',
-  '../../foo.bar/ghi.ts'
+  'http://foo.bar/ghi.ts'
 ];
 const urlsActual = [];
 
