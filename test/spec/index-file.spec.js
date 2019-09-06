@@ -30,11 +30,9 @@ const objects = [
 const urlsExpected = [
   'abc.ts',
   '../def.ts',
-  'http://media.example.com/ghi.ts'
+  '../media.example.com/ghi.ts'
 ];
 const urlsActual = [];
-
-let actualMasterUri;
 
 class DummyReadable extends Readable {
   constructor() {
@@ -77,9 +75,6 @@ class DummyWritable extends Writable {
       const result = HLS.stringify(data).trim();
       // console.log(result);
       actuals.push(result);
-      if (data.isMasterPlaylist) {
-        actualMasterUri = data.uri;
-      }
     } else if (data.type === 'segment') {
       urlsActual.push(data.uri);
     }
@@ -102,7 +97,6 @@ test.cb('createUrlRewriter', t => {
     for (let i = 0; i < urlsExpected.length; i++) {
       t.is(urlsExpected[i], urlsActual[i]);
     }
-    t.is(actualMasterUri, 'file:///path/to/master.m3u8');
     t.end();
   });
 });

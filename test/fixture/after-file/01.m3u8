@@ -2,9 +2,9 @@
 #EXT-X-VERSION:3
 #EXT-X-TARGETDURATION:10
 #EXTINF:9.009,
-http://media.example.com/low/first.ts
+../media.example.com/low/first.ts
 #EXTINF:9.009,
-http://media.example.com/low/second.ts
+../media.example.com/low/second.ts
 #EXTINF:3.003,
-http://media.example.com/low/third.ts
+../media.example.com/low/third.ts
 #EXT-X-ENDLIST
