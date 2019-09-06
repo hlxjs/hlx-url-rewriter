@@ -6,10 +6,12 @@
 [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
 
 # hlx-url-rewriter
-A transform stream to modify URLs contained in HLS playlists
+A transform stream to rewrite URLs in HLS playlists
 
 ## Features
-* Being used with other [`hlx`](https://github.com/hlxjs) objects, it provides a functionality to filter every playlists and rewrite the urls in them based on the `rules`.
+* Being used with other [`hlx`](https://github.com/hlxjs) objects, it provides a functionality to filter every playlists and rewrite the urls in them.
+* You can specify a custom function to parse/modify playlists or the default function will be used.
+* The default function rewrites urls in accordance with the rules described below (See "default function")
 
 ## Install
 [![NPM](https://nodei.co/npm/hlx-url-rewriter.png?mini=true)](https://nodei.co/npm/hlx-url-rewriter/)
@@ -46,20 +48,33 @@ Creates a new `TransformStream` object.
 #### params
 | Name    | Type   | Required | Default | Description   |
 | ------- | ------ | -------- | ------- | ------------- |
-| rules | function | No       | internally defined default function (see below) | A function that takes an hls-parser object and modifies its url string. |
+| rewriteFunc | function | No       | An internally defined default function | A function that takes an hls-parser object and modifies url strings included in the object. |
 | options | function | No       | see below | An object preserving options |
 
 #### default function
-The default behavior is something like this:
-```js
-// pseudo code
-function defaultFunc(data) {
-  if (data.uri is relative) {
-    // Do nothing
-  } else {
-    // Put in a root directory
-    const url = new URL(data.uri);
-    data.uri = `/${url.hostname}/${url.pathname}`;
+Pseudo code:
+```
+function defaultFunc(playlist, playlistUrl) {
+  for each url contained in the playlist {
+    if (url is not an absolute url) {
+      resolve url with playlistUrl to make it absolute
+        ex1: "http://example.com/path/to/file" + "../../path2/to/file" = "http://example.com/path2/to/file"
+        ex2: "file:///path/to/file" + "../../path2/to/file" = "file:///path2/to/file"
+        ex3: "http://example.com/path/to/file" + "/path2/to/file" = "http://example.com/path2/to/file"
+        ex4: "file:///path/to/file" + "/path2/to/file" = "file://{options.rootPath}/path/to/file"
+      }
+    }
+
+    if (url is not an absolute url) {
+      return url
+    }
+    if (url is a file url || url and playlistUrl share the same hostname) {
+      return a relative path from playlistUrl.pathname to url.pathname
+    }
+    if (playlistUrl is a file url) {
+      return a relative path from playlistUrl.pathname to "{options.rootPath}/{url.hostname}/{url.pathname}"
+    }
+    return "/{url.hostname}/{url.pathname}"
   }
 }
 ```
@@ -67,7 +82,7 @@ function defaultFunc(data) {
 #### options
 | Name        | Type   | Default | Description                       |
 | ----------- | ------ | ------- | --------------------------------- |
-| rootPath | string | "/" | Required if file urls are included in playlists. A file url will be converted to an absolute path assuming the `rootPath` is the root. |
+| rootPath | string | "/" | This value will be used by the default function to convert a file url into a relative path. |
 
 #### return value
 An instance of `TransformStream`.

@@ -61,43 +61,37 @@ function rewriteUrl(data, base) {
   data.__hlx_url_rewriter_visited__ = true;
 }
 
-function createFullPath(obj) {
-  if (obj.protocol === 'file:') {
-    const {rootPath = '/'} = defaultFunc.options;
-    if (obj.pathname.startsWith(rootPath)) {
-      return path.join('/', path.relative(rootPath, obj.pathname));
-    }
-  }
-  return obj.pathname;
+function relativePath(from, to) {
+  const fromDir = path.dirname(from);
+  print(`\trelativePath: from="${fromDir}", to="${to}"`);
+  return path.relative(fromDir, to);
 }
 
 function rewrite(uri, base) {
-  print(`\t<<< "${uri}", "${base}"`);
-
-  const obj = createUrl(uri, base);
-  const baseObj = createUrl(base);
-
-  if (!obj || !baseObj) {
+  const {rootPath = '/'} = defaultFunc.options;
+  const playlistUrl = createUrl(base);
+  if (path.isAbsolute(uri) && playlistUrl.protocol === 'file:') {
+    uri = `file://${path.join(rootPath, uri)}`;
+  }
+  print(`\t<<< "${uri}", "${base}", rootPath=${rootPath}`);
+  const url = createUrl(uri, base);
+  if (!url) {
     print(`\t>>> "${uri}"`);
     return uri;
   }
-
-  if (obj.hostname && baseObj.hostname && obj.hostname !== baseObj.hostname) {
-    print(`\t>>> "${obj.href}"`);
-    return obj.href;
+  let result;
+  if (playlistUrl && url.protocol === playlistUrl.protocol && url.hostname === playlistUrl.hostname) {
+    print('\tpattern-a');
+    result = relativePath(playlistUrl.pathname, url.pathname);
+  } else if (playlistUrl && playlistUrl.protocol === 'file:') {
+    print('\tpattern-b');
+    result = relativePath(playlistUrl.pathname, path.join(rootPath, url.hostname, url.pathname));
+  } else {
+    print('\tpattern-c');
+    result = `/${url.hostname}${url.pathname}`;
   }
-
-  if (obj.protocol !== baseObj.protocol) {
-    print(`\t>>> "${obj.href}"`);
-    return obj.href;
-  }
-
-  const pathname = createFullPath(obj);
-  const basePathname = createFullPath(baseObj);
-  print(`\tpathname=${pathname}, basePathname=${basePathname}`);
-  const result = path.relative(path.dirname(basePathname), pathname);
   print(`\t>>> "${result}"`);
-  return `${result}${obj.search}${obj.hash}`;
+  return `${result}${url.search}${url.hash}`;
 }
 
 module.exports = defaultFunc;
