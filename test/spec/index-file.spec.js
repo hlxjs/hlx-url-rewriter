@@ -44,11 +44,12 @@ class DummyReadable extends Readable {
     fixtures.forEach(({before, after}) => {
       const data = HLS.parse(before);
       if (data.isMasterPlaylist) {
-        data.uri = 'file:///path/to/master.m3u8';
+        data.uri = masterPlaylistUrl;
         data.parentUri = '';
+        isMasterPlaylistRead = true;
       } else {
         data.uri = 'playlist/media.m3u8';
-        data.parentUri = 'file:///path/to/master.m3u8';
+        data.parentUri = masterPlaylistUrl;
         for (const segment of data.segments) {
           segment.parentUri = 'file:///path/to/playlist/media.m3u8';
         }
@@ -72,6 +73,9 @@ class DummyWritable extends Writable {
 
   _write(data, _, cb) {
     if (data.type === 'playlist') {
+      if (data.isMasterPlaylist) {
+        actualMasterPlaylistUrl = data.uri;
+      }
       const result = HLS.stringify(data).trim();
       // console.log(result);
       actuals.push(result);
@@ -86,6 +90,10 @@ const src = new DummyReadable();
 const rewrite = createUrlRewriter({rootPath: '/path/to/'});
 const dest = new DummyWritable();
 
+const masterPlaylistUrl = 'file:///path/to/master.m3u8';
+let isMasterPlaylistRead = false;
+let actualMasterPlaylistUrl;
+
 test.cb('createUrlRewriter', t => {
   src.pipe(rewrite).pipe(dest)
   .on('finish', () => {
@@ -96,6 +104,9 @@ test.cb('createUrlRewriter', t => {
     t.is(urlsExpected.length, urlsActual.length);
     for (let i = 0; i < urlsExpected.length; i++) {
       t.is(urlsExpected[i], urlsActual[i]);
+    }
+    if (isMasterPlaylistRead) {
+      t.is(actualMasterPlaylistUrl, 'master.m3u8');
     }
     t.end();
   });
