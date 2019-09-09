@@ -65,16 +65,16 @@ function defaultFunc(playlist, playlistUrl) {
       }
     }
 
-    if (url is not an absolute url) {
+    if (url is not an absolute url || playlistUrl == '') {
       return url
     }
-    if (url is a file url || url and playlistUrl share the same hostname) {
+    if (url and playlistUrl share the same protocol AND hostname) {
       return a relative path from playlistUrl.pathname to url.pathname
     }
     if (playlistUrl is a file url) {
       return a relative path from playlistUrl.pathname to "{options.rootPath}/{url.hostname}/{url.pathname}"
     }
-    return "/{url.hostname}/{url.pathname}"
+    return a relative path from playlistUrl.pathname to "/{url.hostname}/{url.pathname}"
   }
 }
 ```
