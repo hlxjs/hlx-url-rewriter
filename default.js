@@ -69,15 +69,12 @@ function rewrite(uri, base) {
   }
   print(`\t<<< "${uri}", "${base}", rootPath=${rootPath}`);
   const url = createUrl(uri, base);
-  if (!url) {
+  if (!url || !playlistUrl) {
     print(`\t>>> "${uri}"`);
     return uri;
   }
   let result;
-  if (!playlistUrl) {
-    print('\tpattern-A');
-    result = path.relative(url.protocol === 'file:' ? rootPath : '/', url.pathname);
-  } else if (url.protocol === playlistUrl.protocol && url.hostname === playlistUrl.hostname) {
+  if (url.protocol === playlistUrl.protocol && url.hostname === playlistUrl.hostname) {
     print('\tpattern-B');
     result = path.relative(path.dirname(playlistUrl.pathname), url.pathname);
   } else if (playlistUrl.protocol === 'file:') {
