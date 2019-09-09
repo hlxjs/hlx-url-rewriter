@@ -106,7 +106,7 @@ test.cb('createUrlRewriter', t => {
       t.is(urlsExpected[i], urlsActual[i]);
     }
     if (isMasterPlaylistRead) {
-      t.is(actualMasterPlaylistUrl, 'master.m3u8');
+      t.is(actualMasterPlaylistUrl, masterPlaylistUrl);
     }
     t.end();
   });
