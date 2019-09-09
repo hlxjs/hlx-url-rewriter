@@ -1,6 +1,6 @@
 {
   "name": "hlx-url-rewriter",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "A transform stream to modify URLs contained in HLS playlists",
   "main": "index.js",
   "directories": {
