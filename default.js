@@ -61,8 +61,8 @@ function rewriteUrl(data, base) {
   data.__hlx_url_rewriter_visited__ = true;
 }
 
-function createRelativeFunc(playlistUrl) {
-  return pathname => path.relative(path.dirname(playlistUrl.pathname), pathname);
+function createRelativeFunc(fromPath) {
+  return pathname => path.relative(path.dirname(fromPath), pathname);
 }
 
 function rewrite(uri, base) {
@@ -77,11 +77,11 @@ function rewrite(uri, base) {
     print(`\t>>> "${uri}"`);
     return uri;
   }
-  const relativeToPlaylist = createRelativeFunc(playlistUrl);
+  const relativeToPlaylist = createRelativeFunc(path.join('/', playlistUrl.hostname, playlistUrl.pathname));
   let result;
   if (url.protocol === playlistUrl.protocol && url.hostname === playlistUrl.hostname) {
     print('\tpattern-A');
-    result = relativeToPlaylist(url.pathname);
+    result = relativeToPlaylist(path.join('/', url.hostname, url.pathname));
   } else {
     print('\tpattern-B');
     result = relativeToPlaylist(path.join(playlistUrl.protocol === 'file:' ? rootPath : '/', url.hostname, url.pathname));
