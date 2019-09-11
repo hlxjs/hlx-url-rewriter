@@ -77,11 +77,11 @@ function rewrite(uri, base) {
     print(`\t>>> "${uri}"`);
     return uri;
   }
-  const relativeToPlaylist = createRelativeFunc(path.join('/', playlistUrl.hostname, playlistUrl.pathname));
+  const relativeToPlaylist = createRelativeFunc(playlistUrl.pathname);
   let result;
   if (url.protocol === playlistUrl.protocol && url.hostname === playlistUrl.hostname) {
     print('\tpattern-A');
-    result = relativeToPlaylist(path.join('/', url.hostname, url.pathname));
+    result = relativeToPlaylist(url.pathname);
   } else {
     print('\tpattern-B');
     result = relativeToPlaylist(path.join(playlistUrl.protocol === 'file:' ? rootPath : '/', url.hostname, url.pathname));
