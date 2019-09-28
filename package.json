@@ -57,13 +57,13 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "hlx-util": "0.0.7"
+    "hlx-util": "0.0.8"
   },
   "devDependencies": {
     "ava": "^2.4.0",
     "coveralls": "^3.0.6",
     "hls-parser": "^0.4.5",
     "nyc": "^14.1.1",
-    "xo": "^0.24.0"
+    "xo": "^0.25.3"
   }
 }
