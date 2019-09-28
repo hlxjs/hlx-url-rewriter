@@ -98,11 +98,11 @@ test.cb('createUrlRewriter', t => {
   src.pipe(rewrite).pipe(dest)
   .on('finish', () => {
     t.is(results.length, actuals.length);
-    for (let i = 0; i < results.length; i++) {
+    for (const i of results.keys()) {
       t.is(results[i], actuals[i]);
     }
     t.is(urlsExpected.length, urlsActual.length);
-    for (let i = 0; i < urlsExpected.length; i++) {
+    for (const i of urlsExpected.keys()) {
       t.is(urlsExpected[i], urlsActual[i]);
     }
     if (isMasterPlaylistRead) {
