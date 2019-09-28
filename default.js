@@ -61,8 +61,29 @@ function rewriteUrl(data, base) {
   data.__hlx_url_rewriter_visited__ = true;
 }
 
-function createRelativeFunc(fromPath) {
-  return pathname => path.relative(path.dirname(fromPath), pathname);
+function createPath(url, rootPath) {
+  let absolutePath;
+  if (url.protocol === 'file:') {
+    if (url.pathname.startsWith(rootPath)) {
+      absolutePath = url.pathname;
+    } else {
+      absolutePath = path.join(rootPath, url.pathname);
+    }
+  } else {
+    absolutePath = path.join('/', url.hostname, url.pathname);
+  }
+  print(`\tcreatePath: ${url.href} => ${absolutePath}`);
+  return absolutePath;
+}
+
+function createRelativePath(fromUrl, toUrl) {
+  const {rootPath = '/'} = defaultFunc.options;
+  const fromPath = createPath(fromUrl, rootPath);
+  let toPath = createPath(toUrl, rootPath);
+  if (fromUrl.protocol === 'file:' && toUrl.protocol !== 'file:') {
+    toPath = path.join(rootPath, toPath);
+  }
+  return path.relative(path.dirname(fromPath), toPath);
 }
 
 function rewrite(uri, base) {
@@ -77,15 +98,7 @@ function rewrite(uri, base) {
     print(`\t>>> "${uri}"`);
     return uri;
   }
-  const relativeToPlaylist = createRelativeFunc(playlistUrl.pathname);
-  let result;
-  if (url.protocol === playlistUrl.protocol && url.hostname === playlistUrl.hostname) {
-    print('\tpattern-A');
-    result = relativeToPlaylist(url.pathname);
-  } else {
-    print('\tpattern-B');
-    result = relativeToPlaylist(path.join(playlistUrl.protocol === 'file:' ? rootPath : '/', url.hostname, url.pathname));
-  }
+  const result = createRelativePath(playlistUrl, url);
   print(`\t>>> "${result}"`);
   return `${result}${url.search}${url.hash}`;
 }
