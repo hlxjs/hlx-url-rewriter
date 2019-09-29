@@ -86,6 +86,11 @@ function createRelativePath(fromUrl, toUrl) {
   return path.relative(path.dirname(fromPath), toPath);
 }
 
+function createAbsolutePath(url) {
+  const {rootPath = '/'} = defaultFunc.options;
+  return createPath(url, rootPath);
+}
+
 function rewrite(uri, base) {
   const {rootPath = '/'} = defaultFunc.options;
   const playlistUrl = createUrl(base);
@@ -98,7 +103,12 @@ function rewrite(uri, base) {
     print(`\t>>> "${uri}"`);
     return uri;
   }
-  const result = createRelativePath(playlistUrl, url);
+  let result;
+  if (url.protocol === playlistUrl.protocol && url.hostname === playlistUrl.hostname) {
+    result = createRelativePath(playlistUrl, url);
+  } else {
+    result = createAbsolutePath(url);
+  }
   print(`\t>>> "${result}"`);
   return `${result}${url.search}${url.hash}`;
 }

@@ -8,5 +8,5 @@ first.ts
 #EXTINF:9.009,
 ../low/third.ts
 #EXTINF:3.003,
-../../media2.example.com/low/fourth.ts
+/media2.example.com/low/fourth.ts
 #EXT-X-ENDLIST
